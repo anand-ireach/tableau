@@ -12,7 +12,7 @@
 - name: TABLEAU USER | Create Tableau Server admin user
   user:
     name: "{{ tableau_user }}"
-    password: "{{ tabadminPwd }}"
+    password: "{{ tableau_password }}"
     groups: "{{ tableau_user }},tableau,tsmadmin"
     shell: /bin/bash
     state: present
