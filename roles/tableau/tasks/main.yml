@@ -1,10 +1,8 @@
 ---
 
-- name: TABLEAU | Ensure if sudoers is configured correctly
-  lineinfile:
-    path: /etc/sudoers
-    state: present
-    line: "#includedir /etc/sudoers.d"
+- name: TABLEAU | Setup Tableau Server
+  import_tasks: server-setup.yml
+  tags: tableau-server
 
 - name: TABLEAU | Install Tableau Server
   import_tasks: install.yml
@@ -19,3 +17,11 @@
   become: true
   become_user: "{{ tableau_user }}"
   tags: tableau-config
+
+- name: TABLEAU | Configure Tableau Server SSL
+  import_tasks: ssl.yml
+  tags: tableau-ssl
+
+- name: TABLEAU | Configure Tableau Server JDBC Drivers
+  import_tasks: jdbc-drivers.yml
+  tags: tableau-jdbc

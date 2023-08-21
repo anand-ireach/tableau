@@ -1,0 +1,20 @@
+---
+
+- name: TABLEAU | Configure SSL
+  command: "openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 -config roles/tableau/templates/tmp/openssl.conf -keyout cert.key -out cert.crt -extensions 'v3_req'"
+
+- name: TABLEAU | Print cert details
+  command: "openssl x509 -in cert.crt -text -noout"
+
+- name: TABLEAU | Enable external SSL
+  command: "{{ TSM_EXECUTABLE }}/tsm security external-ssl enable --cert-file cert.crt --key-file cert.key"
+  register: tableau_ssl_status
+
+- name: TABLEAU | Config gateway public port
+  command: "{{ TSM_EXECUTABLE }}/tsm configuration set -k gateway.public.port -v 443"
+
+- name: TABLEAU | onfig gateway public host
+  command: "{{ TSM_EXECUTABLE }}/tsm configuration set -k gateway.public.host -v experity1.cjestel.net"
+
+- name: TABLEAU | Apply pending changes
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply"

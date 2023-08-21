@@ -1,0 +1,18 @@
+---
+
+- name: TABLEAU | Configure JDBC Drivers
+  become: yes
+  command: "{{ item }}"
+  with_items:
+    - cd /opt/tableau/tableau_driver/jdbc
+    - wget https://downloads.tableau.com/drivers/linux/postgresql/postgresql-42.2.14.jar
+    - cd
+    - apt --fix-broken install
+    - apt-get install unixodbc
+    - wget https://sfc-repo.snowflakecomputing.com/odbc/linux/2.25.12/snowflake-odbc-2.25.12.x86_64.deb
+    - dpkg -i snowflake-odbc-2.25.12.x86_64.deb
+    - tsm pending-changes apply
+  ignore_errors: yes
+
+- name: TABLEAU CONFIG | Initialize Tableau Server (This may take some time)
+  command: "tabcmd initialuser --server http://localhost --username {{ tabcmd_dataops_username }} --password {{ tabcmd_dataops_password }}"
