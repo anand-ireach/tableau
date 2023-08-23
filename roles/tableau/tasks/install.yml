@@ -1,6 +1,6 @@
 ---
 
-- name: TABLEAU INSTALL | Install on Debian environment (This may take some time)
+- name: TABLEAU INSTALL | Get package
   command: "wget {{ tableau_url_deb }}"
   when: ansible_os_family == 'Debian'
 

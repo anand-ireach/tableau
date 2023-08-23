@@ -26,18 +26,6 @@ tableau_url_rpm: "https://downloads.tableau.com/esdalt/{{ tableau_version_major 
 tableau_fix_systemd_unit: false
 
 #########################################################################################
-# Users
-#########################################################################################
-tableau_user: "{{ ansible_local.experity.tableau.tabadmin }}"
-tableau_password: "{{ ansible_local.experity.tableau.tabadminPwd }}"
-
-#tabcmd_admin_username: "{{ ansible_local.experity.tableau.adminUser }}"
-#tabcmd_admin_password: "{{ ansible_local.experity.tableau.adminPassword }}"
-
-tabcmd_dataops_username: "{{ ansible_local.experity.tableau.dataopsUser }}"
-tabcmd_dataops_password: "{{ ansible_local.experity.tableau.dataopsUser }}"
-
-#########################################################################################
 # Configuration
 #########################################################################################
 tableau_data_dir: /opt/tableau/tableau_server

@@ -10,6 +10,7 @@
 
 - name: TABLEAU | Manage Tableau Server Admin account
   import_tasks: user.yml
+  become: true
   tags: tableau-user
 
 - name: TABLEAU | Configure Tableau Server
