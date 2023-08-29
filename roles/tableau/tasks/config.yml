@@ -21,11 +21,13 @@
   command: "{{ TSM_EXECUTABLE }}/tsm user-identity-store list"
   changed_when: false
   register: tableau_list_identity_store
+  ignore_errors: yes
 
 - name: TABLEAU CONFIG | Get Licenses list
   command: "{{ TSM_EXECUTABLE }}/tsm licenses list"
   changed_when: false
   register: tableau_list_licenses
+  ignore_errors: yes
 
 - name: TABLEAU CONFIG | Set Tableau Server licence
   command: "{{ TSM_EXECUTABLE }}/tsm licenses activate -k {{ tsm_licence }}"
@@ -33,6 +35,7 @@
     - tsm_licence != ""
     - not tsm_licence in tableau_list_licenses.stdout
   register: tableau_set_licence_status
+  ignore_errors: yes
 
 - name: TABLEAU CONFIG | Print tableau_set_licence_status
   debug:
@@ -42,6 +45,7 @@
   command: "{{ TSM_EXECUTABLE }}/tsm licenses activate -t"
   when: tsm_licence == ""
   register: tableau_set_free_licence_status
+  ignore_errors: yes
 
 - name: TABLEAU CONFIG | Print tableau_set_free_licence_status
   debug:

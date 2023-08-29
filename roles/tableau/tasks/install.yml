@@ -1,12 +1,18 @@
 ---
 
-- name: TABLEAU INSTALL | Get package
-  command: "wget {{ tableau_url_deb }}"
+- name: TABLEAU INSTALL | Get Debian package
+  get_url:
+      url: "{{ tableau_url_deb }}"
+      dest: /opt/
+      mode: '0755'
   when: ansible_os_family == 'Debian'
 
 - name: TABLEAU INSTALL | Install on Debian environment (This may take some time)
   become: yes
   command: "gdebi -n {{ tableau_deb_package }}"
+  args:
+      chdir: "/opt"
+      creates: "{{ tableau_data_dir }}"
   when: ansible_os_family == 'Debian'
 
 - name: TABLEAU INSTALL | Install on RedHat environment (This may take some time)
@@ -17,23 +23,16 @@
 
 - name: TABLEAU INSTALL | Get Tableau TSM version
   shell: "ls {{ tsm_packages }} | grep scripts"
-  register: tsm
+  register: tsm_version
   changed_when: false
 
 - name: TABLEAU INSTALL | Get Tableau TSM version
   debug:
-    msg: tsm
-
-- name: TABLEAU INSTALL | Fix systemd unit
-  lineinfile:
-    path: "{{ tsm_packages }}/{{ tsm.stdout }}/user-at.service"
-    line: Environment=XDG_RUNTIME_DIR=/run/user/%i
-    insertbefore: "^ExecStart="
-    state: present
-  when: tableau_fix_systemd_unit
+    msg: "{{ tsm_version }}"
 
 - name: TABLEAU INSTALL | Initialize Tableau TSM
-  command: ./initialize-tsm {{ tsm_execute_args }}
+  become: yes
+  command: ./initialize-tsm {{ tsm_execute_args }} -a ubuntu
   args:
-    chdir: "{{ tsm_packages }}/{{ tsm.stdout }}"
+    chdir: "{{ tsm_packages }}/{{ tsm_version.stdout }}"
     creates: "{{ tableau_data_dir }}"

@@ -2,15 +2,15 @@
 
 - name: TABLEAU | Configure Tableau Server
   become: yes
-  command: "{{ item }}"
+  shell: "{{ item }}"
   with_items:
     - mkfs -t xfs /dev/nvme1n1
     - mkdir -p /var/opt/tableau
     - sh -c 'echo "UUID=$(blkid -s UUID -o value /dev/nvme1n1) /var/opt/tableau xfs defaults 0 1" >> /etc/fstab'
     - mount -a
-    - apt-get update
-    - apt-get upgrade -y
-    - apt-get -y install gdebi-core
+    - apt update
+    - apt upgrade -y
+    - apt -y install gdebi-core
     - iptables -F
     - iptables -X
     - iptables -t nat -F
