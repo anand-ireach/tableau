@@ -1,21 +1,30 @@
 ---
 
-- name: TABLEAU | Configure SSL
+- name: TABLEAU SSL| Generate SSL Certs
   command: "openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 -config roles/tableau/templates/tmp/openssl.conf -keyout cert.key -out cert.crt -extensions 'v3_req'"
 
-- name: TABLEAU | Print cert details
+- name: TABLEAU SSL| Print SSL Certs details
   command: "openssl x509 -in cert.crt -text -noout"
-  register: cert_details
 
-- name: TABLEAU | Enable external SSL
+- name: TABLEAU SSL| Enable External SSL
   command: "{{ TSM_EXECUTABLE }}/tsm security external-ssl enable --cert-file cert.crt --key-file cert.key"
   register: tableau_ssl_status
 
-- name: TABLEAU | Config gateway public port
+- name: TABLEAU SSL| Config Gateway Public Port
   command: "{{ TSM_EXECUTABLE }}/tsm configuration set -k gateway.public.port -v 443"
+  register: tableau_gateway_public_port_status
 
-- name: TABLEAU | Config gateway public host
+- name: TABLEAU SSL| Config Gateway Public Host
   command: "{{ TSM_EXECUTABLE }}/tsm configuration set -k gateway.public.host -v experity1.cjestel.net"
+  register: tableau_gateway_public_host_status
 
-- name: TABLEAU | Apply pending changes
+- name: TABLEAU SSL| Apply Pending Changes
   command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply"
+  vars:
+    statuses:
+      - "{{ tableau_ssl_status is changed }}"
+      - "{{ tableau_gateway_public_port_status is changed }}"
+      - "{{ tableau_gateway_public_host_status is changed }}"
+    changed_statuses: "{{ statuses | reject('==',False) | list }}"
+    should_run: "{{ changed_statuses | length > 0 }}"
+  when: should_run

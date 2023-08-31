@@ -1,25 +1,18 @@
 ---
 
-- name: TABLEAU INSTALL | Get Debian package
-  get_url:
-      url: "{{ tableau_url_deb }}"
-      dest: /opt/
-      mode: '0755'
-  when: ansible_os_family == 'Debian'
-
 - name: TABLEAU INSTALL | Install on Debian environment (This may take some time)
   become: yes
   command: "gdebi -n {{ tableau_deb_package }}"
   args:
-      chdir: "/opt"
+      chdir: "/opt/pre-install-packages/"
       creates: "{{ tableau_data_dir }}"
   when: ansible_os_family == 'Debian'
 
-- name: TABLEAU INSTALL | Install on RedHat environment (This may take some time)
-  yum:
-    name: "{{ tableau_url_rpm }}"
-    state: present
-  when: ansible_os_family == 'RedHat'
+# - name: TABLEAU INSTALL | Install on RedHat environment (This may take some time)
+#   yum:
+#     name: "{{ tableau_url_rpm }}"
+#     state: present
+#   when: ansible_os_family == 'RedHat'
 
 - name: TABLEAU INSTALL | Get Tableau TSM version
   shell: "ls {{ tsm_packages }} | grep scripts"
@@ -33,6 +26,10 @@
 - name: TABLEAU INSTALL | Initialize Tableau TSM
   become: yes
   command: ./initialize-tsm {{ tsm_execute_args }} -a ubuntu
+  register: tsm_install_status
   args:
     chdir: "{{ tsm_packages }}/{{ tsm_version.stdout }}"
-    creates: "{{ tableau_data_dir }}"
+
+- name: TABLEAU INSTALL | Print Tableau TSM Install Status
+  debug:
+    msg: "{{ tsm_install_status }}"

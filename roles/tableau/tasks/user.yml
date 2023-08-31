@@ -8,7 +8,7 @@
 - name: Add the user of Dataops-tsmadmin
   user:
     name: dataops-tsmadmin
-    password: "{{ ansible_local.experity.tableau.dataopsUserPwd }}"
+    password: "{{ ansible_facts['ansible_local']['experity']['tableau']['dataopsuserpwd'] | password_hash('sha512') }}"
     comment: "Ansible DataOps User"
     group: tsmadmin
     update_password: on_create

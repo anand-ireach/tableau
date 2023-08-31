@@ -4,19 +4,18 @@
   import_tasks: server-setup.yml
   tags: tableau-server
 
+- name: TABLEAU | Manage Tableau Server Admin account
+  become: true
+  import_tasks: user.yml
+  tags: tableau-user
+
 - name: TABLEAU | Install Tableau Server
   import_tasks: install.yml
   tags: tableau-install
 
-- name: TABLEAU | Manage Tableau Server Admin account
-  import_tasks: user.yml
-  become: true
-  tags: tableau-user
-
 - name: TABLEAU | Configure Tableau Server
   import_tasks: config.yml
-  become: true
-  become_user: "{{ tableau_user }}"
+  become_user: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
   tags: tableau-config
 
 - name: TABLEAU | Configure Tableau Server SSL

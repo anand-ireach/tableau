@@ -17,46 +17,44 @@
   with_items:
     - "{{ tsm }}"
 
-- name: TABLEAU CONFIG | Check whether Identity store is set
-  command: "{{ TSM_EXECUTABLE }}/tsm user-identity-store list"
-  changed_when: false
-  register: tableau_list_identity_store
-  ignore_errors: yes
-
-- name: TABLEAU CONFIG | Get Licenses list
+- name: TABLEAU INSTALL-CONFIG | Get Licenses list
   command: "{{ TSM_EXECUTABLE }}/tsm licenses list"
-  changed_when: false
   register: tableau_list_licenses
-  ignore_errors: yes
+  changed_when: false
+  ignore_errors: true
 
-- name: TABLEAU CONFIG | Set Tableau Server licence
+- name: TABLEAU INSTALL-CONFIG | Set Tableau Server licence
   command: "{{ TSM_EXECUTABLE }}/tsm licenses activate -k {{ tsm_licence }}"
   when:
     - tsm_licence != ""
     - not tsm_licence in tableau_list_licenses.stdout
   register: tableau_set_licence_status
-  ignore_errors: yes
 
-- name: TABLEAU CONFIG | Print tableau_set_licence_status
+- name: TABLEAU INSTALL-CONFIG | Print tableau_set_licence_status
   debug:
     msg: "{{ tableau_set_licence_status }}"
 
-- name: TABLEAU CONFIG | Get free trial Tableau Server licence
+- name: TABLEAU INSTALL-CONFIG | Get and Set free trial Tableau Server licence
   command: "{{ TSM_EXECUTABLE }}/tsm licenses activate -t"
   when: tsm_licence == ""
   register: tableau_set_free_licence_status
-  ignore_errors: yes
 
-- name: TABLEAU CONFIG | Print tableau_set_free_licence_status
+- name: TABLEAU INSTALL-CONFIG | Print tableau_set_free_licence_status
   debug:
     msg: "{{ tableau_set_free_licence_status }}"
+
+- name: TABLEAU CONFIG | Check whether Identity store is set
+  command: "{{ TSM_EXECUTABLE }}/tsm user-identity-store list"
+  changed_when: false
+  register: tableau_list_identity_store
+  ignore_errors: true
 
 - name: TABLEAU CONFIG | Copy Tableau Server registration file
   template:
     src: "tmp/tableau_registration_file.json.j2"
     dest: "/tmp/tableau_registration_file.json"
-    owner: "{{ tableau_user }}"
-    group: "{{ tableau_user }}"
+    owner: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
+    group: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
     mode: 0644
   register: registration_template
 
@@ -73,8 +71,8 @@
   template:
     src: "tmp/tableau_identity_file.json.j2"
     dest: "/tmp/tableau_identity_file.json"
-    owner: "{{ tableau_user }}"
-    group: "{{ tableau_user }}"
+    owner: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
+    group: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
     mode: 0644
 
 - name: TABLEAU CONFIG | Configure Tableau Server identity stores
@@ -124,6 +122,7 @@
       - "{{ tableau_set_free_licence_status is changed }}"
       - "{{ tableau_set_identity_store_status is changed }}"
       - "{{ tableau_set_example_status is changed }}"
+      - "{{ tableau_set_shareproductusagedata_status is changed }}"
     changed_statuses: "{{ statuses | reject('==',False) | list }}"
     should_run: "{{ changed_statuses | length > 0 }}"
   when: should_run

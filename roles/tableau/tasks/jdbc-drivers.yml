@@ -1,18 +1,36 @@
 ---
 
-- name: TABLEAU | Configure JDBC Drivers
+- name: TABLEAU JDBC Drivers Config | Copy Postgres Package
+  copy:
+    src: "/opt/pre-install-packages/{{ postgresql_package }}"
+    dest: /opt/tableau/tableau_driver/jdbc/
+    owner: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
+    group: "{{ ansible_facts['ansible_local']['experity']['tableau']['tableau_user'] }}"
+    mode: '0644'
+  register: copy_postgres_status
+
+- name: TABLEAU JDBC Drivers Config | Install unixodbc
   become: yes
   command: "{{ item }}"
   with_items:
-    - cd /opt/tableau/tableau_driver/jdbc
-    - wget https://downloads.tableau.com/drivers/linux/postgresql/postgresql-42.2.14.jar
-    - cd
     - apt --fix-broken install
     - apt-get install unixodbc
-    - wget https://sfc-repo.snowflakecomputing.com/odbc/linux/2.25.12/snowflake-odbc-2.25.12.x86_64.deb
-    - dpkg -i snowflake-odbc-2.25.12.x86_64.deb
-    - tsm pending-changes apply
   ignore_errors: yes
 
-- name: TABLEAU CONFIG | Initialize Tableau Server (This may take some time)
-  command: "tabcmd initialuser --server http://localhost --username {{ tabcmd_dataops_username }} --password {{ tabcmd_dataops_password }}"
+- name: TABLEAU JDBC Drivers Config | Configure Snowflake
+  become: yes
+  command: "dpkg -i /opt/pre-install-packages/{{ snowflake_package }}"
+  register: snowflake_status
+
+- name: TABLEAU JDBC Drivers Config | Apply pending changes
+  command: "{{ TSM_EXECUTABLE }}/tsm pending-changes apply"
+  vars:
+    statuses:
+      - "{{ copy_postgres_status is changed }}"
+      - "{{ snowflake_status is changed }}"
+    changed_statuses: "{{ statuses | reject('==',False) | list }}"
+    should_run: "{{ changed_statuses | length > 0 }}"
+  when: should_run
+
+- name: TABLEAU Server Initialize | Initialize Tableau Server with TabAdmin
+  command: "tabcmd initialuser --server http://localhost --username {{ ansible_facts['ansible_local']['experity']['tableau']['dataopsuser'] }} --password {{ ansible_facts['ansible_local']['experity']['tableau']['dataopsuserpwd'] }}"
