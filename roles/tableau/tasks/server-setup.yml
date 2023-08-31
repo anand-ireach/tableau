@@ -25,34 +25,34 @@
   ignore_errors: yes
 
 - name: TABLEAU PRE INSTALL | Check TABLEAU Package existence
-stat: "path=/opt/pre-install-packages/{{ tableau_deb_package }}"
-register: tableau_package_dir
+  stat: "path=/opt/pre-install-packages/{{ tableau_deb_package }}"
+  register: tableau_package_dir
 
 - name: TABLEAU INSTALL | Get Tableau Package
-get_url:
+  get_url:
    url: "{{ tableau_url_deb }}"
    dest: /opt/
    mode: '0755'
-when: ansible_os_family == 'Debian' and not tableau_package_dir.stat.exists
+  when: ansible_os_family == 'Debian' and not tableau_package_dir.stat.exists
 
 - name: TABLEAU PRE INSTALL | Check Postgres Package existence
-stat: "path=/opt/pre-install-packages/{{ postgresql_package }}"
-register: postgres_package_dir
+  stat: "path=/opt/pre-install-packages/{{ postgresql_package }}"
+  register: postgres_package_dir
 
 - name: TABLEAU PRE INSTALL | Get Postgres Package
-get_url:
+  get_url:
    url: "https://downloads.tableau.com/drivers/linux/postgresql/postgresql-42.2.14.jar"
    dest: /opt/pre-install-packages/
    mode: '0755'
-when: not postgres_package_dir.stat.exists
+  when: not postgres_package_dir.stat.exists
 
 - name: TABLEAU PRE INSTALL | Check Snowflake Package existence
-stat: "path=/opt/pre-install-packages/{{ snowflake_package }}"
-register: snowflake_package_dir
+  stat: "path=/opt/pre-install-packages/{{ snowflake_package }}"
+  register: snowflake_package_dir
 
 - name: TABLEAU PRE INSTALL | Get Snowflake Package
-get_url:
+  get_url:
    url: "https://sfc-repo.snowflakecomputing.com/odbc/linux/2.25.12/snowflake-odbc-2.25.12.x86_64.deb"
    dest: /opt/pre-install-packages/
    mode: '0755'
-when: not snowflake_package_dir.stat.exists
+  when: not snowflake_package_dir.stat.exists
